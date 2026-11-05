@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HelixBot - IT Helpdesk Assistant</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; background: #0f1115; color: #e6e6e6; }
+  h1 { color: #7dd3fc; }
+  #chat { border: 1px solid #333; border-radius: 8px; height: 420px; overflow-y: auto; padding: 12px; background: #161a21; margin-bottom: 12px; }
+  .msg { margin: 8px 0; line-height: 1.4; white-space: pre-wrap; }
+  .user { color: #93c5fd; }
+  .bot { color: #86efac; }
+  .err { color: #f87171; }
+  form { display: flex; gap: 8px; }
+  input[type=text] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #e6e6e6; }
+  button { padding: 10px 16px; border-radius: 6px; border: none; background: #7dd3fc; color: #0f1115; font-weight: bold; cursor: pointer; }
+  .note { font-size: 12px; color: #888; margin-top: 16px; }
+</style>
+</head>
+<body>
+<h1>🛠️ HelixBot — Acme Corp IT Helpdesk</h1>
+<div id="chat"></div>
+<form id="form">
+  <input type="text" id="input" placeholder="Ask about VPN, passwords, software..." autocomplete="off" autofocus>
+  <button type="submit">Send</button>
+</form>
+<p class="note">Intentionally vulnerable demo application for prompt-injection security training. Not for production use.</p>
+
+<script>
+const chat = document.getElementById('chat');
+const form = document.getElementById('form');
+const input = document.getElementById('input');
+
+function addMsg(text, cls) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  div.textContent = (cls === 'user' ? 'You: ' : cls === 'bot' ? 'HelixBot: ' : '') + text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const message = input.value.trim();
+  if (!message) return;
+  addMsg(message, 'user');
+  input.value = '';
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message})
+    });
+    const data = await res.json();
+    addMsg(data.reply, 'bot');
+  } catch (err) {
+    addMsg('Request failed: ' + err, 'err');
+  }
+});
+</script>
+</body>
+</html>
